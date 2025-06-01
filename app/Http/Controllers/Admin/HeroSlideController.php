@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\HeroSlide;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage; // Import Storage facade for file operations
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log; 
+// use Illuminate\Support\Facades\URL; // Not strictly needed if using redirect() with path
 
 class HeroSlideController extends Controller
 {
@@ -36,22 +38,20 @@ class HeroSlideController extends Controller
             'sub_headline' => 'nullable|string|max:500',
             'button_text' => 'nullable|string|max:100',
             'button_link' => 'nullable|url|max:255',
-            'text_color' => 'nullable|string|max:7', // For hex color like #FFFFFF
+            'text_color' => 'nullable|string|max:7',
             'order' => 'required|integer|min:0',
             'is_active' => 'required|boolean',
-            'background_image_path' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048', // Validation for image
+            'background_image_path' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
         ]);
 
         if ($request->hasFile('background_image_path')) {
-            // Store in 'public/hero_slides_backgrounds' directory
-            // Ensure you've run `php artisan storage:link`
             $path = $request->file('background_image_path')->store('hero_slides_backgrounds', 'public');
-            $validatedData['background_image_path'] = $path; // Store the path
+            $validatedData['background_image_path'] = $path;
         }
 
         HeroSlide::create($validatedData);
 
-        return redirect()->route('admin.hero_slides.index')->with('success', 'Hero slide created successfully.');
+        return redirect('/admin/hero-slides')->with('success', 'Hero slide created successfully.');
     }
 
     /**
@@ -59,7 +59,8 @@ class HeroSlideController extends Controller
      */
     public function show(HeroSlide $heroSlide)
     {
-        return view('admin.hero_slides.edit', compact('heroSlide')); // Or a dedicated show view if you prefer
+        // For admin, typically redirect to edit or show a simplified view.
+        return view('admin.hero_slides.edit', compact('heroSlide'));
     }
 
     /**
@@ -83,32 +84,29 @@ class HeroSlideController extends Controller
             'text_color' => 'nullable|string|max:7',
             'order' => 'required|integer|min:0',
             'is_active' => 'required|boolean',
-            'background_image_path' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048', // For new image uploads
-            'remove_background_image' => 'nullable|boolean', // For removing existing image
+            'background_image_path' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'remove_background_image' => 'nullable|boolean',
         ]);
 
-        // Handle background image upload/removal
         if ($request->input('remove_background_image')) {
             if ($heroSlide->background_image_path) {
                 Storage::disk('public')->delete($heroSlide->background_image_path);
-                $validatedData['background_image_path'] = null; // Set to null in database
+                $validatedData['background_image_path'] = null;
             }
         } elseif ($request->hasFile('background_image_path')) {
-            // Delete old image if it exists and a new one is uploaded
             if ($heroSlide->background_image_path) {
                 Storage::disk('public')->delete($heroSlide->background_image_path);
             }
-            // Store new image
             $path = $request->file('background_image_path')->store('hero_slides_backgrounds', 'public');
             $validatedData['background_image_path'] = $path;
         }
-        // If neither remove_background_image is checked nor a new file is uploaded,
-        // $validatedData will not contain 'background_image_path', so the existing one remains.
-
+        // Note: If 'background_image_path' is not in $validatedData (e.g. no new image, not removing),
+        // the existing $heroSlide->background_image_path will be preserved during update.
+        // To be explicit if $validatedData doesn't contain it and you don't want to change it:
+        // unset($validatedData['background_image_path']); // if it's not set in request
 
         $heroSlide->update($validatedData);
-
-        return redirect()->route('admin.hero_slides.index')->with('success', 'Hero slide updated successfully.');
+        return redirect('/admin/hero-slides')->with('success', 'Hero slide updated successfully.');
     }
 
     /**
@@ -116,12 +114,14 @@ class HeroSlideController extends Controller
      */
     public function destroy(HeroSlide $heroSlide)
     {
-        // Delete associated background image from storage if it exists
         if ($heroSlide->background_image_path) {
             Storage::disk('public')->delete($heroSlide->background_image_path);
         }
-
         $heroSlide->delete();
-        return redirect()->route('admin.hero_slides.index')->with('success', 'Hero slide deleted successfully.');
+
+        // Logging for debug, can be removed once confirmed working
+        Log::info('Hero slide ID ' . $heroSlide->id . ' deleted. Attempting redirect to /admin/hero-slides.');
+
+        return redirect('/admin/hero-slides')->with('success', 'Hero slide deleted successfully.');
     }
 }

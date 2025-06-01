@@ -7,8 +7,8 @@ use App\Models\Setting; // Import the Setting model
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Artisan; // For clearing cache
-use Illuminate\Support\Facades\Cache; // For caching
-use Illuminate\Support\Facades\Log; // For logging
+use Illuminate\Support\Facades\Cache;   // Import Cache facade
+use Illuminate\Support\Facades\Log;     // For logging
 
 class SettingController extends Controller
 {
@@ -19,10 +19,8 @@ class SettingController extends Controller
      */
     public function index()
     {
-        // Fetch all settings to pass to the view
         $settings = Setting::getAllSettings(); // Returns a collection keyed by 'key'
 
-        // For convenience in the view, ensure specific keys exist with defaults
         $siteName = $settings->get('site_name', config('app.name', 'ItezSoft'));
         $siteLogo = $settings->get('site_logo', null);
         $footerCopyright = $settings->get('footer_copyright_text', '© ' . date('Y') . ' ' . config('app.name', 'ItezSoft'));
@@ -33,6 +31,11 @@ class SettingController extends Controller
         $socialLinkedinUrl = $settings->get('social_linkedin_url', '');
         $socialInstagramUrl = $settings->get('social_instagram_url', '');
 
+        // Slider Settings
+        $sliderAutoplay = filter_var($settings->get('slider_autoplay', '1'), FILTER_VALIDATE_BOOLEAN); // Default to true
+        $sliderDuration = (int) $settings->get('slider_duration', '5000'); // Default to 5000ms
+        $sliderNavigationDots = filter_var($settings->get('slider_navigation_dots', '1'), FILTER_VALIDATE_BOOLEAN); // Default to true
+
         return view('admin.settings.index', compact(
             'siteName',
             'siteLogo',
@@ -42,7 +45,10 @@ class SettingController extends Controller
             'socialFacebookUrl',
             'socialTwitterUrl',
             'socialLinkedinUrl',
-            'socialInstagramUrl'
+            'socialInstagramUrl',
+            'sliderAutoplay',
+            'sliderDuration',
+            'sliderNavigationDots'
         ));
     }
 
@@ -56,7 +62,7 @@ class SettingController extends Controller
     {
         $validatedData = $request->validate([
             'site_name' => 'required|string|max:255',
-            'site_logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048', // Max 2MB
+            'site_logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
             'remove_site_logo' => 'nullable|boolean',
             'footer_copyright_text' => 'nullable|string|max:500',
             'contact_email' => 'nullable|email|max:255',
@@ -65,40 +71,37 @@ class SettingController extends Controller
             'social_twitter_url' => 'nullable|url|max:255',
             'social_linkedin_url' => 'nullable|url|max:255',
             'social_instagram_url' => 'nullable|url|max:255',
+            // Slider Settings Validation
+            'slider_autoplay' => 'required|boolean',
+            'slider_duration' => 'required|integer|min:1000|max:30000', // e.g., 1-30 seconds
+            'slider_navigation_dots' => 'required|boolean',
         ]);
 
-        // Update Site Name
         Setting::setValue('site_name', $validatedData['site_name']);
-
-        // Update Footer Copyright Text
         Setting::setValue('footer_copyright_text', $validatedData['footer_copyright_text'] ?? '');
-
-        // Update Contact Email
         Setting::setValue('contact_email', $validatedData['contact_email'] ?? '');
-
-        // Update Contact Phone
         Setting::setValue('contact_phone', $validatedData['contact_phone'] ?? '');
-
-        // Update Social Media URLs
         Setting::setValue('social_facebook_url', $validatedData['social_facebook_url'] ?? '');
         Setting::setValue('social_twitter_url', $validatedData['social_twitter_url'] ?? '');
         Setting::setValue('social_linkedin_url', $validatedData['social_linkedin_url'] ?? '');
         Setting::setValue('social_instagram_url', $validatedData['social_instagram_url'] ?? '');
 
+        // Update Slider Settings
+        // When a checkbox is unchecked, it's not present in the request,
+        // so $request->input('slider_autoplay', '0') provides a default if not present.
+        Setting::setValue('slider_autoplay', $request->input('slider_autoplay', '0'), 'boolean');
+        Setting::setValue('slider_duration', (string)$validatedData['slider_duration'], 'integer');
+        Setting::setValue('slider_navigation_dots', $request->input('slider_navigation_dots', '0'), 'boolean');
 
-        // Handle Logo Upload
+
         if ($request->hasFile('site_logo')) {
-            // Delete old logo if it exists
             $oldLogoPath = Setting::getValue('site_logo');
             if ($oldLogoPath) {
                 Storage::disk('public')->delete($oldLogoPath);
             }
-
-            // Store new logo
-            $path = $request->file('site_logo')->store('site_assets', 'public'); // Stores in storage/app/public/site_assets
+            $path = $request->file('site_logo')->store('site_assets', 'public');
             Setting::setValue('site_logo', $path, 'image_path');
         } elseif ($request->input('remove_site_logo')) {
-            // Delete logo if "remove" checkbox is checked
             $oldLogoPath = Setting::getValue('site_logo');
             if ($oldLogoPath) {
                 Storage::disk('public')->delete($oldLogoPath);
@@ -106,13 +109,10 @@ class SettingController extends Controller
             }
         }
 
-        // Clear relevant caches
-        // The Setting model's boot method handles individual setting caches.
-        // For settings used globally (like in view composers), ensure that cache is cleared.
-        Cache::forget('global_site_settings_for_composer'); // If you named your composer cache like this
-        // Or a more general cache clear if settings are used in many places:
-        Artisan::call('cache:clear');
-        Artisan::call('config:clear'); // If settings might affect config values that are cached
+        // Clear the specific cache used by SettingsComposer and other general caches
+        Cache::forget('global_site_settings_for_composer');
+        Artisan::call('cache:clear'); // Clears default application cache
+        Artisan::call('config:clear'); // Important if settings are used in config files that are cached
 
         return redirect()->route('admin.settings.index')->with('success', 'Site settings updated successfully!');
     }

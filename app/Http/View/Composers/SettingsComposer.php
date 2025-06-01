@@ -15,6 +15,9 @@ class SettingsComposer
      */
     public function __construct()
     {
+        // Fetch all settings, using the helper from your Setting model if available,
+        // or implement similar logic here.
+        // This assumes Setting::getAllSettings() returns a collection keyed by 'key'.
         $this->settings = Cache::rememberForever('global_site_settings_for_composer', function () {
             return Setting::all()->pluck('value', 'key');
         });
@@ -32,13 +35,17 @@ class SettingsComposer
         $view->with('globalSiteLogo', $this->settings->get('site_logo', null));
         $view->with('globalFooterCopyright', $this->settings->get('footer_copyright_text', '© ' . date('Y') . ' ' . config('app.name', 'ItezSoft')));
 
-        // Add new global settings
         $view->with('globalContactEmail', $this->settings->get('contact_email', 'info@example.com'));
         $view->with('globalContactPhone', $this->settings->get('contact_phone', ''));
         $view->with('globalSocialFacebookUrl', $this->settings->get('social_facebook_url', ''));
         $view->with('globalSocialTwitterUrl', $this->settings->get('social_twitter_url', ''));
         $view->with('globalSocialLinkedinUrl', $this->settings->get('social_linkedin_url', ''));
         $view->with('globalSocialInstagramUrl', $this->settings->get('social_instagram_url', ''));
-        // Add any other global settings you want to share
+
+        // Slider Settings
+        // Ensure proper casting for boolean and integer values from string DB storage
+        $view->with('globalSliderAutoplay', filter_var($this->settings->get('slider_autoplay', '1'), FILTER_VALIDATE_BOOLEAN));
+        $view->with('globalSliderDuration', (int) $this->settings->get('slider_duration', '5000'));
+        $view->with('globalSliderNavigationDots', filter_var($this->settings->get('slider_navigation_dots', '1'), FILTER_VALIDATE_BOOLEAN));
     }
 }

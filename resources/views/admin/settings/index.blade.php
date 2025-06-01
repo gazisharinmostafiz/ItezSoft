@@ -54,7 +54,6 @@
             {{-- Section: Contact Information --}}
             <div class="mb-8 border-b border-gray-200 pb-6">
                 <h2 class="text-xl font-semibold text-gray-700 mb-4">Contact Information</h2>
-                {{-- Contact Email --}}
                 <div class="mb-6">
                     <label for="contact_email" class="block text-sm font-medium text-gray-700 mb-1">Contact Email</label>
                     <input type="email" name="contact_email" id="contact_email"
@@ -64,8 +63,6 @@
                         <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
                     @enderror
                 </div>
-
-                {{-- Contact Phone --}}
                 <div class="mb-6">
                     <label for="contact_phone" class="block text-sm font-medium text-gray-700 mb-1">Contact Phone</label>
                     <input type="text" name="contact_phone" id="contact_phone"
@@ -80,7 +77,6 @@
             {{-- Section: Social Media Links --}}
             <div class="mb-8 border-b border-gray-200 pb-6">
                 <h2 class="text-xl font-semibold text-gray-700 mb-4">Social Media Links</h2>
-                {{-- Facebook URL --}}
                 <div class="mb-6">
                     <label for="social_facebook_url" class="block text-sm font-medium text-gray-700 mb-1">Facebook URL</label>
                     <input type="url" name="social_facebook_url" id="social_facebook_url"
@@ -91,8 +87,6 @@
                         <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
                     @enderror
                 </div>
-
-                {{-- Twitter URL --}}
                 <div class="mb-6">
                     <label for="social_twitter_url" class="block text-sm font-medium text-gray-700 mb-1">Twitter (X) URL</label>
                     <input type="url" name="social_twitter_url" id="social_twitter_url"
@@ -103,8 +97,6 @@
                         <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
                     @enderror
                 </div>
-
-                {{-- LinkedIn URL --}}
                 <div class="mb-6">
                     <label for="social_linkedin_url" class="block text-sm font-medium text-gray-700 mb-1">LinkedIn URL</label>
                     <input type="url" name="social_linkedin_url" id="social_linkedin_url"
@@ -115,8 +107,6 @@
                         <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
                     @enderror
                 </div>
-
-                {{-- Instagram URL --}}
                 <div class="mb-6">
                     <label for="social_instagram_url" class="block text-sm font-medium text-gray-700 mb-1">Instagram URL</label>
                     <input type="url" name="social_instagram_url" id="social_instagram_url"
@@ -129,11 +119,53 @@
                 </div>
             </div>
 
+            {{-- Section: Homepage Slider Settings --}}
+            <div class="mb-8 border-b border-gray-200 pb-6">
+                <h2 class="text-xl font-semibold text-gray-700 mb-4">Homepage Slider</h2>
+                {{-- Slider Autoplay --}}
+                <div class="mb-6">
+                    <label for="slider_autoplay" class="flex items-center text-sm font-medium text-gray-700">
+                        <input type="hidden" name="slider_autoplay" value="0"> {{-- Send 0 if checkbox not ticked --}}
+                        <input type="checkbox" name="slider_autoplay" id="slider_autoplay" value="1"
+                               class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                               {{ old('slider_autoplay', $sliderAutoplay ?? true) ? 'checked' : '' }}>
+                        <span class="ml-2">Enable Autoplay</span>
+                    </label>
+                    @error('slider_autoplay')
+                        <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                {{-- Slider Duration --}}
+                <div class="mb-6">
+                    <label for="slider_duration" class="block text-sm font-medium text-gray-700 mb-1">Autoplay Duration (milliseconds)</label>
+                    <input type="number" name="slider_duration" id="slider_duration" min="1000" max="30000" step="500"
+                           class="mt-1 block w-full md:w-1/3 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('slider_duration') border-red-500 @enderror"
+                           value="{{ old('slider_duration', $sliderDuration ?? 5000) }}">
+                    <p class="mt-1 text-xs text-gray-500">Time each slide is visible (e.g., 5000 for 5 seconds).</p>
+                    @error('slider_duration')
+                        <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                {{-- Slider Navigation Dots --}}
+                <div class="mb-6">
+                    <label for="slider_navigation_dots" class="flex items-center text-sm font-medium text-gray-700">
+                        <input type="hidden" name="slider_navigation_dots" value="0">
+                        <input type="checkbox" name="slider_navigation_dots" id="slider_navigation_dots" value="1"
+                               class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                               {{ old('slider_navigation_dots', $sliderNavigationDots ?? true) ? 'checked' : '' }}>
+                        <span class="ml-2">Show Navigation Dots</span>
+                    </label>
+                    @error('slider_navigation_dots')
+                        <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
+                    @enderror
+                </div>
+            </div>
 
             {{-- Section: Footer Settings --}}
             <div class="mb-8">
                 <h2 class="text-xl font-semibold text-gray-700 mb-4">Footer</h2>
-                {{-- Footer Copyright Text --}}
                 <div class="mb-6">
                     <label for="footer_copyright_text" class="block text-sm font-medium text-gray-700 mb-1">Footer Copyright Text</label>
                     <textarea name="footer_copyright_text" id="footer_copyright_text" rows="3"
@@ -144,7 +176,6 @@
                 </div>
             </div>
 
-            {{-- Submit Button --}}
             <div class="mt-8 flex justify-start">
                 <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-6 rounded-md shadow-sm transition duration-150 ease-in-out">
                     <i class="fas fa-save mr-2"></i>Save Settings
@@ -155,16 +186,12 @@
 @endsection
 
 @push('scripts')
-{{-- Add any page-specific scripts here if needed --}}
 <script>
-    // Optional: Preview for image upload
     const siteLogoInput = document.getElementById('site_logo');
     if (siteLogoInput) {
         siteLogoInput.addEventListener('change', function(event) {
             const [file] = event.target.files;
             if (file) {
-                // You could add a preview element and set its src to URL.createObjectURL(file)
-                // For simplicity, this example doesn't add a live preview before upload.
                 console.log('New logo selected:', file.name);
             }
         });

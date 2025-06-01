@@ -72,6 +72,7 @@ Route::prefix('admin')
         // Route::resource('jobs', AdminJobController::class);
     });
 
-// Frontend Route for Dynamic Pages
+// Frontend Route for Dynamic Pages (SHOULD BE NEAR THE END of your web routes)
+// This uses route model binding with the 'slug' field from your Page model.
 Route::get('/{page:slug}', [PageController::class, 'showDynamicPage'])->name('page.show');
 
