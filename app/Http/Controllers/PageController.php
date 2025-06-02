@@ -1,8 +1,9 @@
 <?php
 
-namespace App\Http\Controllers; // This is the correct namespace
+namespace App\Http\Controllers;
 
-use App\Models\Page; // Import the Page model
+use App\Models\Page;    // Import the Page model
+use App\Models\HeroSlide; // Import the HeroSlide model
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -10,13 +11,18 @@ class PageController extends Controller
 {
     public function home(): View
     {
-        // You might want to fetch specific settings or data for the homepage here later
-        return view('home');
+        // Fetch active hero slides, ordered by the 'order' column
+        $heroSlides = HeroSlide::where('is_active', true)
+                               ->orderBy('order', 'asc')
+                               ->get();
+
+        // You might want to fetch other specific data for the homepage here later
+        return view('home', compact('heroSlides')); // Pass heroSlides to the view
     }
 
     public function about(): View
     {
-        // Example of converting 'About Us' to a dynamic page:
+        // If you want 'About Us' to be a dynamic page from the 'pages' table:
         // try {
         //     $page = Page::where('slug', 'about-us')->where('is_published', true)->firstOrFail();
         //     return view('pages.show', compact('page'));
@@ -28,7 +34,14 @@ class PageController extends Controller
 
     public function contact(): View
     {
-        return view('contact');
+        // If you want 'Contact Us' to be a dynamic page:
+        // try {
+        //     $page = Page::where('slug', 'contact-us')->where('is_published', true)->firstOrFail();
+        //     return view('pages.show', compact('page'));
+        // } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+        //     abort(404);
+        // }
+        return view('contact'); // Current static view
     }
 
     public function careers(): View
@@ -36,7 +49,7 @@ class PageController extends Controller
         return view('careers.index');
     }
 
-    // Service Pages
+    // Service Pages (Can also be converted to dynamic pages if desired)
     public function graphicsDesign(): View
     {
         return view('services.graphics');
@@ -59,6 +72,9 @@ class PageController extends Controller
 
     /**
      * Display a dynamic page from the 'pages' table by its slug.
+     *
+     * @param  \App\Models\Page  $page (Route model binding by slug)
+     * @return \Illuminate\View\View
      */
     public function showDynamicPage(Page $page) // Route model binding will find the page by its slug
     {
@@ -66,6 +82,8 @@ class PageController extends Controller
         if (!$page->is_published) {
             abort(404);
         }
+
+        // The 'pages.show' view will be created next to display the page content
         return view('pages.show', compact('page'));
     }
 }

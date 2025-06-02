@@ -24,14 +24,15 @@
 
 @section('content')
 
+    {{-- Hero Slider Section --}}
     @if(isset($heroSlides) && $heroSlides->count() > 0)
         <section
             x-data="{
                 currentSlide: 0,
                 slides: {{ $heroSlides->count() }},
-                autoplay: {{ $globalSliderAutoplay ? 'true' : 'false' }}, // Use global setting from SettingsComposer
-                autoplayInterval: {{ $globalSliderDuration ?? 5000 }}, // Use global setting from SettingsComposer
-                showDots: {{ $globalSliderNavigationDots ? 'true' : 'false' }}, // Use global setting from SettingsComposer
+                autoplay: {{ isset($globalSliderAutoplay) && $globalSliderAutoplay ? 'true' : 'false' }},
+                autoplayInterval: {{ $globalSliderDuration ?? 5000 }},
+                showDots: {{ isset($globalSliderNavigationDots) && $globalSliderNavigationDots ? 'true' : 'false' }},
                 intervalId: null,
                 next() {
                     this.currentSlide = (this.currentSlide + 1) % this.slides;
@@ -44,8 +45,7 @@
                 },
                 startAutoplay() {
                     if (this.autoplay && this.slides > 1) {
-                        // Clear any existing interval before starting a new one
-                        if (this.intervalId) clearInterval(this.intervalId);
+                        if (this.intervalId) clearInterval(this.intervalId); // Clear existing interval
                         this.intervalId = setInterval(() => {
                             this.next();
                         }, this.autoplayInterval);
@@ -55,21 +55,15 @@
                     clearInterval(this.intervalId);
                     this.intervalId = null;
                 },
-                initSlider() { // Renamed from x-init for clarity, called by x-init
+                initSlider() {
                     this.startAutoplay();
-                    // Watch for changes in autoplay or interval to restart autoplay correctly
                     this.$watch('autoplay', (value) => {
-                        if (value) {
-                            this.startAutoplay();
-                        } else {
-                            this.stopAutoplay();
-                        }
+                        this.stopAutoplay(); 
+                        if (value) this.startAutoplay(); 
                     });
                     this.$watch('autoplayInterval', (value) => {
-                        if (this.autoplay) {
-                            this.stopAutoplay(); // Stop existing
-                            this.startAutoplay(); // Restart with new interval
-                        }
+                        this.stopAutoplay(); 
+                        if (this.autoplay) this.startAutoplay(); 
                     });
                 }
             }"
@@ -124,7 +118,7 @@
                 </div>
             @endforeach
 
-            {{-- Slider Controls: Previous/Next Buttons (Optional) --}}
+            {{-- Slider Controls: Previous/Next Buttons --}}
             @if($heroSlides->count() > 1)
                 <button @click="prev(); stopAutoplay(); startAutoplay();" class="absolute left-0 top-1/2 transform -translate-y-1/2 z-20 p-2 md:p-4 bg-black bg-opacity-30 hover:bg-opacity-50 text-white rounded-r-md transition-colors">
                     <i class="fas fa-chevron-left fa-lg"></i>
@@ -133,7 +127,7 @@
                     <i class="fas fa-chevron-right fa-lg"></i>
                 </button>
 
-                {{-- Slider Controls: Dots (Optional) --}}
+                {{-- Slider Controls: Dots --}}
                 <div x-show="showDots" class="absolute bottom-4 md:bottom-8 left-1/2 transform -translate-x-1/2 z-20 flex space-x-2">
                     @foreach($heroSlides as $index => $slide)
                         <button @click="goTo({{ $index }}); stopAutoplay(); startAutoplay();"
@@ -144,7 +138,7 @@
             @endif
         </section>
     @else
-        {{-- Fallback if no hero slides are active --}}
+        {{-- Fallback if no hero slides are active or if $heroSlides is not set/empty --}}
         <section class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-20 md:py-32">
             <div class="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
                 <h1 class="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 leading-tight">
@@ -165,24 +159,28 @@
         <div class="container mx-auto px-4 sm:px-6 lg:px-8">
             <h2 class="text-3xl font-bold text-gray-800 text-center mb-12">Our Core Services</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                {{-- Graphics Design --}}
                 <div class="bg-white p-8 rounded-xl shadow-lg hover:shadow-2xl transition-shadow duration-300 flex flex-col items-center text-center">
                     <div class="text-indigo-500 mb-6 text-5xl"><i class="fas fa-paint-brush"></i></div>
                     <h3 class="text-xl font-semibold text-gray-700 mb-3">Graphics Design</h3>
                     <p class="text-gray-600 text-sm mb-6 flex-grow">Creative visuals, logos, and branding that capture attention and tell your story effectively.</p>
                     <a href="{{ route('services.graphics') }}" class="mt-auto text-indigo-600 hover:text-indigo-800 font-medium text-sm py-2 px-4 border border-indigo-600 rounded-md hover:bg-indigo-50 transition-colors">Learn More &rarr;</a>
                 </div>
+                {{-- POS Solutions --}}
                 <div class="bg-white p-8 rounded-xl shadow-lg hover:shadow-2xl transition-shadow duration-300 flex flex-col items-center text-center">
                     <div class="text-indigo-500 mb-6 text-5xl"><i class="fas fa-cash-register"></i></div>
                     <h3 class="text-xl font-semibold text-gray-700 mb-3">POS Solutions</h3>
                     <p class="text-gray-600 text-sm mb-6 flex-grow">Streamlined Point of Sale systems to manage sales, inventory, and customers efficiently.</p>
                     <a href="{{ route('services.pos') }}" class="mt-auto text-indigo-600 hover:text-indigo-800 font-medium text-sm py-2 px-4 border border-indigo-600 rounded-md hover:bg-indigo-50 transition-colors">Learn More &rarr;</a>
                 </div>
+                {{-- Website Design --}}
                 <div class="bg-white p-8 rounded-xl shadow-lg hover:shadow-2xl transition-shadow duration-300 flex flex-col items-center text-center">
                     <div class="text-indigo-500 mb-6 text-5xl"><i class="fas fa-laptop-code"></i></div>
                     <h3 class="text-xl font-semibold text-gray-700 mb-3">Website Design</h3>
                     <p class="text-gray-600 text-sm mb-6 flex-grow">Modern, responsive, and SEO-friendly websites that convert visitors into loyal customers.</p>
                     <a href="{{ route('services.webdesign') }}" class="mt-auto text-indigo-600 hover:text-indigo-800 font-medium text-sm py-2 px-4 border border-indigo-600 rounded-md hover:bg-indigo-50 transition-colors">Learn More &rarr;</a>
                 </div>
+                {{-- Digital Solutions --}}
                 <div class="bg-white p-8 rounded-xl shadow-lg hover:shadow-2xl transition-shadow duration-300 flex flex-col items-center text-center">
                     <div class="text-indigo-500 mb-6 text-5xl"><i class="fas fa-cogs"></i></div>
                     <h3 class="text-xl font-semibold text-gray-700 mb-3">Digital Solutions</h3>
@@ -206,18 +204,6 @@
 @endsection
 
 @push('scripts')
-{{-- Ensure Alpine.js is loaded. Jetstream usually includes it in app.js --}}
-{{-- If not, you can add its CDN: <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script> --}}
-
-{{-- Optional: Intersection Observer for simple animations (requires app.js setup or separate script) --}}
-{{-- You might need to install a helper: npm install @alpinejs/intersect --}}
-{{-- And import it in your resources/js/app.js:
-import Alpine from 'alpinejs'
-import intersect from '@alpinejs/intersect'
-Alpine.plugin(intersect)
-window.Alpine = Alpine
-Alpine.start()
---}}
 <script>
     // Basic animation classes (can be defined in app.css or here)
     const style = document.createElement('style');
