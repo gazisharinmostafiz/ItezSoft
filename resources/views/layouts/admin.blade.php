@@ -27,8 +27,12 @@
                     <span>Dashboard</span>
                 </a>
                 <a href="{{ route('admin.hero-slides.index') }}" class="flex items-center space-x-2 px-4 py-2.5 rounded-md hover:bg-gray-700 {{ request()->routeIs('admin.hero-slides.*') ? 'bg-gray-700' : '' }}">
-                    <i class="fas fa-images fa-fw"></i> {{-- Hero Slides icon --}}
+                    <i class="fas fa-images fa-fw"></i>
                     <span>Hero Slides</span>
+                </a>
+                <a href="{{ route('admin.menus.index') }}" class="flex items-center space-x-2 px-4 py-2.5 rounded-md hover:bg-gray-700 {{ request()->routeIs('admin.menus.*') ? 'bg-gray-700' : '' }}">
+                    <i class="fas fa-bars fa-fw"></i> {{-- Menu icon --}}
+                    <span>Menu Management</span>
                 </a>
                 <a href="{{ route('admin.posts.index') }}" class="flex items-center space-x-2 px-4 py-2.5 rounded-md hover:bg-gray-700 {{ request()->routeIs('admin.posts.*') ? 'bg-gray-700' : '' }}">
                     <i class="fas fa-file-alt fa-fw"></i>
@@ -120,6 +124,10 @@
                 <a href="{{ route('admin.hero-slides.index') }}" class="flex items-center space-x-2 px-4 py-2.5 rounded-md hover:bg-gray-700 {{ request()->routeIs('admin.hero-slides.*') ? 'bg-gray-700' : '' }}">
                     <i class="fas fa-images fa-fw"></i>
                     <span>Hero Slides</span>
+                </a>
+                <a href="{{ route('admin.menus.index') }}" class="flex items-center space-x-2 px-4 py-2.5 rounded-md hover:bg-gray-700 {{ request()->routeIs('admin.menus.*') ? 'bg-gray-700' : '' }}">
+                    <i class="fas fa-bars fa-fw"></i>
+                    <span>Menu Management</span>
                 </a>
                 <a href="{{ route('admin.posts.index') }}" class="flex items-center space-x-2 px-4 py-2.5 rounded-md hover:bg-gray-700 {{ request()->routeIs('admin.posts.*') ? 'bg-gray-700' : '' }}">
                     <i class="fas fa-file-alt fa-fw"></i>

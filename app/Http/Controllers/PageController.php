@@ -13,8 +13,8 @@ class PageController extends Controller
     {
         // Fetch active hero slides, ordered by the 'order' column
         $heroSlides = HeroSlide::where('is_active', true)
-                               ->orderBy('order', 'asc')
-                               ->get();
+            ->orderBy('order', 'asc')
+            ->get();
 
         // You might want to fetch other specific data for the homepage here later
         return view('home', compact('heroSlides')); // Pass heroSlides to the view
@@ -32,18 +32,29 @@ class PageController extends Controller
         return view('about'); // Current static view
     }
 
-    public function contact(): View
-    {
-        // If you want 'Contact Us' to be a dynamic page:
-        // try {
-        //     $page = Page::where('slug', 'contact-us')->where('is_published', true)->firstOrFail();
-        //     return view('pages.show', compact('page'));
-        // } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-        //     abort(404);
-        // }
-        return view('contact'); // Current static view
-    }
+    // public function contact(): View
+    // {
+    //     // If you want 'Contact Us' to be a dynamic page:
+    //     // try {
+    //     //     $page = Page::where('slug', 'contact-us')->where('is_published', true)->firstOrFail();
+    //     //     return view('pages.show', compact('page'));
+    //     // } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+    //     //     abort(404);
+    //     // }
+    //     return view('contact'); // Current static view
+    // }
 
+    public function contact()
+    {
+        return view('contact', [
+            'globalSocialFacebookUrl' => config('site.facebook'), // or hardcode or fetch from DB
+            'globalSocialTwitterUrl' => config('site.twitter'),
+            'globalSocialLinkedinUrl' => config('site.linkedin'),
+            'globalSocialInstagramUrl' => config('site.instagram'),
+            'globalContactEmail' => 'contact@itezsoft.com', // Replace with actual email
+            'globalContactPhone' => '+8801234567890',       // Replace with actual phone
+        ]);
+    }
     public function careers(): View
     {
         return view('careers.index');

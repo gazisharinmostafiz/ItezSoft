@@ -7,7 +7,9 @@ use App\Http\Controllers\PageController; // For static AND dynamic frontend page
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Admin\PageController as AdminPageController;
-use App\Http\Controllers\Admin\HeroSlideController as AdminHeroSlideController; // <-- ADD THIS IMPORT
+use App\Http\Controllers\Admin\HeroSlideController as AdminHeroSlideController;
+use App\Http\Controllers\Admin\MenuController as AdminMenuController;
+use App\Http\Controllers\Admin\MenuItemController as AdminMenuItemController;
 
 /*
 |--------------------------------------------------------------------------
@@ -62,17 +64,26 @@ Route::prefix('admin')
         Route::resource('posts', AdminPostController::class);
         Route::resource('users', AdminUserController::class);
         Route::resource('pages', AdminPageController::class);
-        Route::resource('hero-slides', AdminHeroSlideController::class); // <-- ADD THIS LINE FOR HERO SLIDE MANAGEMENT
+        Route::resource('hero-slides', AdminHeroSlideController::class);
+        
+        // Menu Management Routes
+        Route::resource('menus', AdminMenuController::class); 
+        
+        // Nested Resource Routes for Menu Items
+        // Removed ->shallow() to ensure routes like admin.menus.items.edit are fully nested
+        // and expect both {menu} and {menu_item} parameters, matching the controller and view.
+        Route::resource('menus.items', AdminMenuItemController::class)
+             ->parameters(['items' => 'menu_item']); 
+
+        // You might add a route for reordering items later:
+        // Route::post('menus/{menu}/items/reorder', [AdminMenuItemController::class, 'updateOrder'])->name('menus.items.reorder');
+
 
         // Site Settings Routes
         Route::get('settings', [SettingController::class, 'index'])->name('settings.index');
         Route::put('settings', [SettingController::class, 'update'])->name('settings.update');
-
-        // Future admin routes for other sections will go here:
-        // Route::resource('jobs', AdminJobController::class);
     });
 
-// Frontend Route for Dynamic Pages (SHOULD BE NEAR THE END of your web routes)
-// This uses route model binding with the 'slug' field from your Page model.
+// Frontend Route for Dynamic Pages
 Route::get('/{page:slug}', [PageController::class, 'showDynamicPage'])->name('page.show');
 

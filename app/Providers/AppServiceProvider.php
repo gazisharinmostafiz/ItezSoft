@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use Illuminate\Support\Facades\View; // Import View facade
 use App\Http\View\Composers\SettingsComposer; // Import your SettingsComposer
+use App\Http\View\Composers\MenuComposer;     // Import your new MenuComposer
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Schema; // For defaultStringLength
 
@@ -22,12 +23,19 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Schema::defaultStringLength(191); // Often needed for older MySQL versions with utf8mb4
+        Schema::defaultStringLength(191);
 
-        // Share settings with specific views using a View Composer
-        // You can specify individual views or use a wildcard for a directory
-        View::composer(['layouts.app', 'partials.header', 'partials.footer'], SettingsComposer::class);
-        // If you want them in the admin layout too (though admin settings page fetches directly):
-        // View::composer('layouts.admin', SettingsComposer::class);
+        // Share global site settings with specified views
+        View::composer(
+            ['layouts.app', 'partials.header', 'partials.footer', 'layouts.admin'], // Views that need global site settings
+            SettingsComposer::class
+        );
+
+        // Share dynamic menu data with specified views
+        // This makes $mainHeaderMenu, $footerQuickLinksMenu, etc., available
+        View::composer(
+            ['partials.header', 'partials.footer'], // Views that will display these dynamic menus
+            MenuComposer::class
+        );
     }
 }
